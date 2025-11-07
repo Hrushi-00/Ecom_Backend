@@ -1,4 +1,6 @@
+import e from "express";
 import Product from "../models/Product.js";
+import User from "../models/userModel.js";
 
 // Add Product
 export const addProduct = async (req, res) => {
@@ -56,17 +58,150 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-export const addFevorite = async (req, res) => {
+export const addFavorite = async (req, res) => {
   try {
+    const userId = req.user._id;
     const productId = req.params.id;
+
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
-    product.isFavorite = !product.isFavorite;
-    await product.save();
-    res.status(200).json(product);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Check if already in favorites
+    if (user.favorites.includes(productId)) {
+      return res.status(400).json({ success: false, message: "Product already in favorites" });
+    }
+
+    user.favorites.push(productId);
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Product added to favorites" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const removeFavorite = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const productId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const index = user.favorites.indexOf(productId);
+    if (index === -1) {
+      return res.status(400).json({ success: false, message: "Product not found in favorites" });
+    }
+
+    user.favorites.splice(index, 1);
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Product removed from favorites" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const getFavoriteItems = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("favorites");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      count: user.favorites.length,
+      favorites: user.favorites,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const addTocart = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const productId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    if (!user.cart) user.cart = [];
+
+    if (user.cart.includes(productId)) {
+      return res.status(400).json({ success: false, message: "Already in cart" });
+    }
+
+    user.cart.push(productId);
+    await user.save();
+
+    res.status(200).json({ success: true, message: "Product added to cart successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const getCartItems = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("cart");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      count: user.cart.length,
+      cart: user.cart,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+export const removeFromCart = async (req, res) => {
+  try {
+    const userId = req.user._id; // from protect middleware
+    const productId = req.params.id;
+
+    // Ensure product exists
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Remove product from user's cart
+    user.cart = user.cart.filter(
+      (id) => id.toString() !== productId.toString()
+    );
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Product removed from cart successfully",
+      cart: user.cart,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

@@ -34,6 +34,9 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Please provide your phone number'],
     trim: true
   },
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+  cart: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+  
   role: {
     type: String,
     enum: ['User', 'Admin'],
