@@ -11,6 +11,7 @@ import {
   getCartItems,
   removeFavorite,
   removeFromCart,
+  clearCart,
 } from "../controllers/productController.js";
 import { protect, adminProtect } from "../middleware/authMiddleware.js";
 
@@ -27,4 +28,5 @@ router.delete("/favorites/:id", protect, removeFavorite);
 router.get("/favorites", protect, getFavoriteItems);
 router.get("/cart", protect, getCartItems);
 router.delete("/removefromcart/:id", protect, removeFromCart);
+router.delete("/clearcart", protect, clearCart);
 export default router;
