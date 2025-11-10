@@ -21,6 +21,16 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please upload a product image"],
   },
+  description: {
+    type: String,
+    trim: true,
+    required: [true, "Please provide a product description"],
+  },
+  category: {
+    type: String,
+    trim: true,
+    required: [true, "Please provide a product category"],
+  },
 }, { timestamps: true }); 
 
 const Product = mongoose.model("Product", productSchema);

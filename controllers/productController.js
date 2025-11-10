@@ -5,14 +5,17 @@ import User from "../models/userModel.js";
 // Add Product
 export const addProduct = async (req, res) => {
   try {
-    const { title, price, rating } = req.body;
-    const image = req.file?.path; // Cloudinary URL from multer-storage-cloudinary
+    const { title, price, rating, description, category } = req.body;
+    const image = req.file?.path;   
 
     const newProduct = new Product({
       title,
       price,
       rating,
       image,
+      description,
+      category,
+      
     });
 
     await newProduct.save();
@@ -229,3 +232,49 @@ export const clearCart = async (req, res) => {
     });
   }
 };
+// Search Products
+// Search Products
+export const searchProducts = async (req, res) => {
+  try {
+    const query = req.query.q ? req.query.q.trim() : "";
+
+    // If query is empty, return all products (optional)
+    if (!query) {
+      const allProducts = await Product.find();
+      return res.status(200).json({ success: true, products: allProducts });
+    }
+
+    // Case-insensitive regex match across multiple fields
+    const regex = new RegExp(query, "i");
+
+    const products = await Product.find({
+      $or: [
+        { title: { $regex: regex } },
+        { description: { $regex: regex } },
+        { category: { $regex: regex } },
+      ],
+    });
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      products,
+    });
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get single product by ID
+export const getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product)
+      return res.status(404).json({ success: false, message: "Product not found" });
+    res.status(200).json({ success: true, product });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
