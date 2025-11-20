@@ -3,15 +3,15 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
-// Helper: Generate JWT
+//  Generate JWT
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "360d",
   });
 };
 
-// @desc    Register new user
-// @route   POST /api/auth/signup
+
+// signup
 export const signup = async (req, res) => {
   try {
     const { email, password, name, phone, address, role } = req.body;
@@ -34,8 +34,8 @@ export const signup = async (req, res) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
+
+// login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -61,8 +61,8 @@ export const login = async (req, res) => {
   }
 };
 
-// @desc    Forgot Password - generate reset token
-// @route   POST /api/auth/forgotPassword
+  // Forgot Password 
+
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -85,8 +85,7 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// @desc    Reset password using token
-// @route   PUT /api/auth/resetPassword/:token
+  // Reset password
 export const resetPassword = async (req, res) => {
   try {
     const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
@@ -109,9 +108,7 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// @desc    Change password (logged-in users)
-// @route   PUT /api/auth/changePassword
+  // Change password (logged-in users)
 export const changePassword = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("+password");
@@ -133,8 +130,8 @@ export const changePassword = async (req, res) => {
   }
 };
 
-// @desc    Get profile
-// @route   GET /api/auth/profile
+// Get profile
+
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -144,8 +141,8 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// @desc    Edit profile
-// @route   PUT /api/auth/editProfile
+// Edit profile
+
 export const editProfile = async (req, res) => {
   try {
     const { name, phone, address } = req.body;

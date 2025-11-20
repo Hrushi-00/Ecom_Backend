@@ -233,7 +233,7 @@ export const clearCart = async (req, res) => {
   }
 };
 // Search Products
-// Search Products
+
 export const searchProducts = async (req, res) => {
   try {
     const query = req.query.q ? req.query.q.trim() : "";
