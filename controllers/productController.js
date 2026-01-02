@@ -43,13 +43,31 @@ export const updateProduct = async (req, res) => {
   }
 };
 // Get Products
+// export const getProducts = async (req, res) => {
+//   try {
+//     const products = await Product.find();
+//     res.status(200).json(products);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+let cache = null;
+let lastFetch = 0;
 export const getProducts = async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  const now = Date.now();
+
+  if (cache && now - lastFetch < 60000) {
+    return res.json(cache);
   }
+
+  const products = await Product.find()
+    .select("title price rating image category")
+    .lean();
+
+  cache = products;
+  lastFetch = now;
+
+  res.json(products);
 };
 // Delete Product
 export const deleteProduct = async (req, res) => {
