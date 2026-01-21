@@ -30,8 +30,9 @@ const storage = new CloudinaryStorage({
   }),
 });
 
-// ✅ Multer setup
+//  Multer setup
 const upload = multer({ storage });
 
 export default upload;
+
 
